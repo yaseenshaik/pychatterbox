@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatterbox</title>
+</head>
+<body>
+    <h3>Rooms:</h3>
+    {% if latest_room_list %}
+        <ul>
+        {% for room in latest_room_list %}
+            <li><a href="{% url 'chatapp:room' room.id %}">{{ room.room_name }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No polls are available.</p>
+    {% endif %}
+</body>
+</html>
