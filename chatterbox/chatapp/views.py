@@ -1,6 +1,8 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.views import generic
-from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 
@@ -22,11 +24,12 @@ class IndexView(generic.ListView):
         return context
 
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Room
     template_name = "chatapp/room.html"
 
 
+@login_required
 def create(request):
     try:
         if not request.POST['room_name']:
@@ -45,3 +48,16 @@ def create(request):
     else:
         room.save()
         return HttpResponseRedirect(reverse("chatapp:room", args=(room.id,)))
+
+
+@login_required
+def chat(request, room_id):
+    try:
+        room = get_object_or_404(Room, pk=room_id)
+        if not request.POST['message']:
+            raise Exception('message is required.')
+    except:
+        return JsonResponse({'error_message': 'please check room_id and message.'})
+    else:
+        room.save()
+        return JsonResponse()
