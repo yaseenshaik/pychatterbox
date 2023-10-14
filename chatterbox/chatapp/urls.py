@@ -10,4 +10,6 @@ urlpatterns = [
     path("new", views.create, name="create"),
     # /chat/1
     path("<int:pk>/", views.DetailView.as_view(), name="room"),
+    # /chat/1/new
+    path("<int:pk>/new", views.chat, name="chat"),
 ]

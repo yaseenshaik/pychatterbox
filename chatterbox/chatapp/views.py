@@ -17,16 +17,16 @@ class IndexView(generic.ListView):
         """Return the last five Rooms."""
         return Room.objects.order_by("-creation_date")[:5]
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # context["now"] = timezone.now()
-
-        return context
-
 
 class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Room
     template_name = "chatapp/room.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_messages'] = context['room'].message_set.order_by(
+            "sent")[:5].prefetch_related('who')
+        return context
 
 
 @login_required
@@ -50,14 +50,19 @@ def create(request):
         return HttpResponseRedirect(reverse("chatapp:room", args=(room.id,)))
 
 
+MESSAGE_KEY = 'message'
+
+
 @login_required
-def chat(request, room_id):
+def chat(request, pk):
     try:
-        room = get_object_or_404(Room, pk=room_id)
-        if not request.POST['message']:
+        room = Room.objects.get(pk=pk)
+        if not request.POST[MESSAGE_KEY]:
             raise Exception('message is required.')
-    except:
-        return JsonResponse({'error_message': 'please check room_id and message.'})
+        message = room.message_set.create(
+            msg_text=request.POST[MESSAGE_KEY], who_id=request.user.id, sent=timezone.now())
+    except Exception:
+        return JsonResponse({'error_message': 'please check room_id and message.', 'success': False})
     else:
         room.save()
-        return JsonResponse()
+        return JsonResponse({'success': True})
