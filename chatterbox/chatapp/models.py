@@ -14,9 +14,6 @@ class Room(models.Model):
     def __str__(self):
         return self.room_name
 
-    def was_created_recently(self):
-        return self.creation_date >= timezone.now() - datetime.timedelta(days=1)
-
 
 class Message(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
